@@ -82,21 +82,6 @@ void applyRegression(std::vector<FaceBox> &_faces, bool addOne)
 }
 
 
-void buildBoxes(std::vector<FaceBox> &_faces)
-{
-    for(auto &face : _faces)
-    {
-        float box_width = face.x2 - face.x1;
-        float box_height = face.y2 - face.y1;
-        float side = std::max(box_width, box_height);
-        face.x1 = (int)(face.x1 + (box_width - side) * 0.5f);
-        face.y1 = (int)(face.y1 + (box_height - side) * 0.5f);
-        face.x2 = (int)(face.x1 + side);
-        face.y2 = (int)(face.y1 + side);
-    }
-}
-
-
 
 void fixBoxBoundaries(cv::Mat _img, FaceBox &_face)
 {
@@ -180,7 +165,6 @@ std::vector<FaceBox> MTCNN_1(cv::Mat _img, cv::dnn::Net _net, float _minFaceSize
     }
 
     applyRegression(faces_1, false);
-    buildBoxes(faces_1);
 
     return faces_1;
 }
@@ -227,7 +211,6 @@ std::vector<FaceBox> MTCNN_2(cv::Mat _img, cv::dnn::Net _net, std::vector<FaceBo
     }
 
     applyRegression(faces_2, true);
-    buildBoxes(faces_2);
 
     return faces_2;
 }
@@ -284,7 +267,6 @@ std::vector<FaceBox> MTCNN_3(cv::Mat _img, cv::dnn::Net _net, std::vector<FaceBo
     }
 
     applyRegression(faces_3, true);
-    buildBoxes(faces_3);
 
     return faces_3;
 }
@@ -316,8 +298,8 @@ int main(int argc, char **argv)
     tm.start();
 
     std::vector<FaceBox> faces = MTCNN_1(input_img, P_Net, 60, 0.79f, pThreshold);
-    faces = MTCNN_2(input_img, R_Net, faces, rThreshold);
-    faces = MTCNN_3(input_img, O_Net, faces, oThreshold);
+    //faces = MTCNN_2(input_img, R_Net, faces, rThreshold);
+    //faces = MTCNN_3(input_img, O_Net, faces, oThreshold);
 
     tm.stop();
     std::cout << "Time: "<< tm.getTimeSec() << " sec at Input Size: " << img.size() << endl;
@@ -325,10 +307,13 @@ int main(int argc, char **argv)
     transformBoxes(faces);
 
     for(auto box : faces)
+    {
         rectangle(img, box.getBox(), Scalar(0,255,0), 3);
+        imshow("Output", img);
+        waitKey();
+    }
 
-    imshow("Output", img);
-    waitKey();
+
 
 
 
